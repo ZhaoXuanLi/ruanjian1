@@ -1,0 +1,223 @@
+package jiajianchengchu;
+
+import java.util.Scanner;
+
+public class Jiajianchengchu
+{
+	public static void main(String[] args)
+	{
+		Scanner scanner=new Scanner(System.in);
+		System.out.print("请输入要生成的随机数个数:");
+		int num=scanner.nextInt(),i;
+		Shi[] shi=new Shi[num];
+		System.out.print(String.format("%-6s","序号"));
+		System.out.println(String.format("%-6s","算式"));
+		for(i=0;i<num;i++)
+		{
+			shi[i]=new Shi();
+			shi[i].chuangjian();
+			shi[i].operate();
+			chachong(i,shi);
+			System.out.print(String.format("%-6s",i+1));
+			shi[i].shuchu();
+		}
+		System.out.print("是否显示正确结果（是或否）：");
+		String in=scanner.next();
+		while(!(in.equals("是")||in.equals("否")))
+		{
+			System.out.print("请输入正确命令（是或否）：");
+			in=scanner.next();
+		}
+		if(in.equals("是"))
+		{
+			System.out.print(String.format("%-6s","序号"));
+			System.out.println(String.format("%-6s","算式结果"));
+			for(i=0;i<num;i++)
+			{
+				System.out.print(String.format("%-6s",i+1));
+				System.out.println(String.format("%-6s",shi[i].value.output()));
+			}
+			System.out.println("答案完毕，您做的怎么样啊！");
+		}
+		else System.out.println("谢谢您的配合，加油！");
+	}
+	
+	static void chachong(int n,Shi[] x)
+	{
+		int i;
+		for(i=0;i<n;i++)
+		{
+			if(x[n].equals(x[i]))
+			{
+				x[n].chuangjian();
+				x[n].operate();
+				chachong(n,x);
+				break;
+			}
+		}
+	}
+}
+
+class Shi
+{
+	Fenshu a,c,value;
+	int b;
+	Shi()
+	{
+		a=new Fenshu();
+		c=new Fenshu();
+		value=new Fenshu();
+	}
+	void chuangjian()
+	{
+		a.chuangjian();
+		b=(int)(Math.random()*4);
+		c.chuangjian();
+		while(c.zi==0&&b==3)
+		{
+			c.chuangjian();
+		}
+	}
+	void shuchu()
+	{
+		if(b==0) System.out.println(String.format("%-20s",a.output()+"+"+c.output()+"="));
+		if(b==1) System.out.println(String.format("%-20s",a.output()+"-"+c.output()+"="));
+		if(b==2) System.out.println(String.format("%-20s",a.output()+"*"+c.output()+"="));
+		if(b==3) System.out.println(String.format("%-20s",a.output()+"÷"+c.output()+"="));
+	}
+	void operate()
+	{
+		if(b==0) value=a.add(c);
+		else if(b==1)
+		{
+			value=a.minus(c);
+			while(value.zi<0)
+			{
+				chuangjian();
+				operate();
+			}
+		}
+		else if(b==2) value=a.multiply(c);
+		else value=a.divide(c);
+	}
+	
+	boolean equals(Shi y)
+	{
+		if(a.equals(y.a)&&b==y.b&&c.equals(y.c)) return true;
+		else if((b==0||b==2)&&a.equals(y.c)&&c.equals(y.a)) return true;
+		else return false;
+	}
+}
+
+class Fenshu
+{
+	int zi,mu;
+	
+	Fenshu()
+	{
+	}
+	
+	boolean equals(Fenshu x)
+	{
+		if(zi*x.mu==mu*x.zi) return true;
+		return false;
+	}
+	
+	void chuangjian()
+	{
+		zi=(int)(Math.random()*100);
+		mu=(int)(Math.random()*100+1);
+		while(zi>mu&&zi%mu!=0)
+		{
+			zi=(int)(Math.random()*100);
+			mu=(int)(Math.random()*100+1);
+		}
+		if(zi!=0)
+		{
+			int gongyue=gongyue(zi,mu);
+			zi=zi/gongyue;
+			mu=mu/gongyue;
+		}
+	}
+	
+	int gongyue(int x,int y)
+	{
+		int k,i;
+		k=x<y?x:y;
+		for(i=k;i>=1;i--)
+		{
+			if(x%i==0&&y%i==0) break;
+		}
+		return i;
+	}
+	
+	String output()
+	{
+		String out="";
+		if(zi==0) out+=zi;
+		else if(mu==1) out+=zi;
+		else out="("+zi+"/"+mu+")";
+		return out;
+	}
+	
+	Fenshu add(Fenshu x)
+	{
+		Fenshu k=new Fenshu();
+		k.mu=mu*x.mu;
+		k.zi=zi*x.mu+mu*x.zi;
+		if(k.zi!=0)
+		{
+			int gongyue=gongyue(k.zi,k.mu);
+			k.zi=k.zi/gongyue;
+			k.mu=k.mu/gongyue;
+		}
+		return k;
+	}
+	
+	Fenshu minus(Fenshu x)
+	{
+		Fenshu k=new Fenshu();
+		k.mu=mu*x.mu;
+		k.zi=zi*x.mu-mu*x.zi;
+		if(k.mu<0&&k.zi<0)
+		{
+			k.zi=k.zi*(-1);
+			k.mu=k.mu*(-1);
+		}
+		if(k.zi>0&&k.mu>0)
+		{
+			int gongyue=gongyue(k.zi,k.mu);
+			k.zi=k.zi/gongyue;
+			k.mu=k.mu/gongyue;
+		}
+		return k;
+	}
+	
+	Fenshu multiply(Fenshu x)
+	{
+		Fenshu k=new Fenshu();
+		k.mu=mu*x.mu;
+		k.zi=zi*x.zi;
+		if(k.zi!=0)
+		{
+			int gongyue=gongyue(k.zi,k.mu);
+			k.zi=k.zi/gongyue;
+			k.mu=k.mu/gongyue;
+		}
+		return k;
+	}
+	
+	Fenshu divide(Fenshu x)
+	{
+		Fenshu k=new Fenshu();
+		k.mu=mu*x.zi;
+		k.zi=zi*x.mu;
+		if(k.zi!=0)
+		{
+			int gongyue=gongyue(k.zi,k.mu);
+			k.zi=k.zi/gongyue;
+			k.mu=k.mu/gongyue;
+		}
+		return k;
+	}
+}
